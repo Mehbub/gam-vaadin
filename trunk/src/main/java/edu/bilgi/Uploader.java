@@ -6,6 +6,8 @@ package edu.bilgi;
 
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Table;
 import com.vaadin.ui.Upload;
 import com.vaadin.ui.Upload.FinishedEvent;
 import com.vaadin.ui.Upload.Receiver;
@@ -57,6 +59,7 @@ public class Uploader extends VerticalLayout {
             public void uploadSucceeded(SucceededEvent event) {
                 // TODO
                 // notification
+                addComponent(studentTable());
             }
         });
 
@@ -66,5 +69,13 @@ public class Uploader extends VerticalLayout {
             }
         });
 
+    }
+    
+    public Component studentTable() {
+        Table table = new Table();
+        table.addContainerProperty("First Name", String.class, null);
+        table.addContainerProperty("Last Name", String.class, null);
+        table.addContainerProperty("Department", String.class, null);
+        return table;
     }
 }
