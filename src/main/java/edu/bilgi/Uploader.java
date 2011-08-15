@@ -14,6 +14,23 @@ import com.vaadin.ui.Upload.Receiver;
 import com.vaadin.ui.Upload.StartedEvent;
 import com.vaadin.ui.Upload.SucceededEvent;
 import com.vaadin.ui.VerticalLayout;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 
 /**
  *
@@ -28,10 +45,10 @@ public class Uploader extends VerticalLayout {
     public String getFileName() {
         return fileName;
     }
-    
+
     public Uploader() {
         uploadReceiver = new UploadReceiver();
-        
+
         upload = new Upload("", uploadReceiver);
         upload.setImmediate(true);
         upload.setButtonCaption("Upload File");
@@ -49,6 +66,7 @@ public class Uploader extends VerticalLayout {
         addComponent(cancelProcessing);
 
         upload.addListener(new Upload.StartedListener() {
+
             public void uploadStarted(StartedEvent event) {
                 fileName = event.getFilename();
                 cancelProcessing.setEnabled(true);
@@ -56,6 +74,7 @@ public class Uploader extends VerticalLayout {
         });
 
         upload.addListener(new Upload.SucceededListener() {
+
             public void uploadSucceeded(SucceededEvent event) {
                 // TODO
                 // notification
@@ -64,18 +83,50 @@ public class Uploader extends VerticalLayout {
         });
 
         upload.addListener(new Upload.FinishedListener() {
+
             public void uploadFinished(FinishedEvent event) {
                 cancelProcessing.setEnabled(false);
             }
         });
 
     }
-    
+
     public Component studentTable() {
         Table table = new Table();
-        table.addContainerProperty("First Name", String.class, null);
-        table.addContainerProperty("Last Name", String.class, null);
-        table.addContainerProperty("Department", String.class, null);
+        String[] header = new String[]{"First Name", "Last Name", "Email", "User Name"};
+        for(String h : header) {
+            table.addContainerProperty(h, String.class, null);
+        }
         return table;
+    }
+
+    public List<String> getStudentListHeader() {
+        try {
+            List<String> header = new LinkedList<String>();
+            InputStream inputStream = null;
+            
+            inputStream = new FileInputStream("/home/hd/foo/" + fileName);
+
+            POIFSFileSystem fileSystem = null;
+
+            fileSystem = new POIFSFileSystem(inputStream);
+
+            HSSFWorkbook workBook = new HSSFWorkbook(fileSystem);
+            HSSFSheet sheet = workBook.getSheetAt(0);
+
+            Iterator<Cell> cells = sheet.getRow(0).cellIterator();
+
+            while (cells.hasNext()) {
+                HSSFCell cell = (HSSFCell) cells.next();
+                header.add(cell.getStringCellValue());
+            }
+            return header;
+        } catch (IOException ex) {
+            Logger.getLogger(Uploader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        StudentListReader reader = new StudentListExcelReader(fileName);
+        List<String> header = reader.getHeader();
+        return header;
     }
 }
