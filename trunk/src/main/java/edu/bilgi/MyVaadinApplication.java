@@ -39,6 +39,8 @@ public class MyVaadinApplication extends Application {
         window.addComponent(header);
         window.addComponent(hr());
         
+        window.addComponent(new ComboBoxDepartmentPrompt());
+        
 //        UploadWithProgressMonitoringExample upload = new UploadWithProgressMonitoringExample();
         Uploader upload = new Uploader();
         window.addComponent(upload);
